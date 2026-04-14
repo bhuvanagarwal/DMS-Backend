@@ -2,11 +2,8 @@ package com.dms.user.service;
 
 import com.dms.util.MessageHelper;
 
-import jakarta.validation.Valid;
-
 import java.time.Instant;
 
-import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -37,7 +34,7 @@ public class UserService {
 
     if(userRepository.findByUsernameIgnoreCaseOrEmailIgnoreCase(request.getUsername(), request.getEmail()).isPresent()){
 
-                return new ApiResponse<>(messageHelper.getMessage("user.email.already.exists", null, LocaleContextHolder.getLocale()), null);
+                return ApiResponse.error("USER_ALREADY_EXISTS",messageHelper.getMessage("user.email.already.exists"), null);
     }
 
 
@@ -74,12 +71,12 @@ public class UserService {
 
     );
 
-    return new ApiResponse<UserResponse>(messageHelper.getMessage("user.created", null, LocaleContextHolder.getLocale()), userResponse);
+    return ApiResponse.success(messageHelper.getMessage("user.created"), userResponse);
 }
 
 
 
-    public ApiResponse<UserResponse> loginUser(LoginRequest loginRequest) {
+    public ApiResponse<?> loginUser(LoginRequest loginRequest) {
 
         if(userRepository.findByUsernameIgnoreCase(loginRequest.getUsername()).isPresent()){
             User user = userRepository.getUserObjectByUsernameIgnoreCase(loginRequest.getUsername());
@@ -88,18 +85,18 @@ public class UserService {
             if(!isPassCorrect){
                 
 
-                return new ApiResponse<>(messageHelper.getMessage("user.login.password.incorrect", null, LocaleContextHolder.getLocale()), null);
+                return ApiResponse.error("INCORRECT_PASSWORD",messageHelper.getMessage("user.login.password.incorrect"), null);
     
             }
             else{
                 user.setLastLoginTimestamp(Instant.now());
                userRepository.save(user);
-                return new ApiResponse<>(messageHelper.getMessage("user.login.password.correct", null, LocaleContextHolder.getLocale()), null);
+                return ApiResponse.success(messageHelper.getMessage("user.login.password.correct"), null);
     
             }
         }
         else{
-            return new ApiResponse<>(messageHelper.getMessage("user.login.invalid.username", null, LocaleContextHolder.getLocale()), null);
+            return ApiResponse.error("INVALID_USERNAME",messageHelper.getMessage("user.login.invalid.username"), null);
     
         }
         
